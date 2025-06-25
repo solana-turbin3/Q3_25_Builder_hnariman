@@ -16,6 +16,7 @@ const to = new PublicKey("DxcRNdAVn9aarXvsTTCnJ4RboayLHXqGtGzf7g9NLt5D");
 const connection = new Connection("https://api.devnet.solana.com");
 (async () => {
   try {
+    const balance = await connection.getBalance(from.publicKey);
     const transaction = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey: from.publicKey,
@@ -29,6 +30,22 @@ const connection = new Connection("https://api.devnet.solana.com");
     ).blockhash;
 
     transaction.feePayer = from.publicKey;
+    const fee =
+      (await (
+        await connection.getFeeForMessage(
+          transaction.compileMessage(),
+          "confirmed",
+        )
+      ).value) || 0;
+    transaction.instructions.pop();
+
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: from.publicKey,
+        toPubkey: to,
+        lamports: balance - fee,
+      }),
+    );
 
     const signature = await sendAndConfirmTransaction(connection, transaction, [
       from,
