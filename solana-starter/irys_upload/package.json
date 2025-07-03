@@ -1,0 +1,19 @@
+{
+  "name": "irys_upload",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.12.1",
+  "dependencies": {
+    "@irys/upload": "^0.0.15",
+    "@irys/upload-ethereum": "^0.0.16",
+    "@irys/upload-solana": "^0.1.8",
+    "gill": "^0.10.2"
+  }
+}
