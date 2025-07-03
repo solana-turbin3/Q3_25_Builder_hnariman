@@ -17,4 +17,4 @@ node_modules
 .pnp.*
 wallet.json
 *wallet.json
-/target
+*/target*
