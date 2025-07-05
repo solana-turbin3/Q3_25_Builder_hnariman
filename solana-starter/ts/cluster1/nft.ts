@@ -132,7 +132,13 @@ const mintNFT = async ({ name, symbol, metadataURI }: IMintNFT): Promise<unknown
         throw Error("Oops.. Something went wrong");
     }
 };
-
+/*
+ * This is combined version of nft_image + nft_metadata + nft_ming
+ * for a quick Rug Day :)
+ *
+ * TODO: potentially use some sharp with while loop to check for image size 
+ * to enable resizing images & check if image is less than 100kb (allowed for NFT)
+*/
 (async () => {
     try {
         const data = {
@@ -162,8 +168,6 @@ const mintNFT = async ({ name, symbol, metadataURI }: IMintNFT): Promise<unknown
     } catch (e) {
         console.error(e);
         throw Error("Houston we have a problem!");
-    } finally {
-        console.log(process.getActiveResourcesInfo());
     }
-})()
+})();
 
