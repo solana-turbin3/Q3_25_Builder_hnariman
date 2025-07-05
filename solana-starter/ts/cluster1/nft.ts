@@ -5,6 +5,8 @@ import { irysUploader } from "@metaplex-foundation/umi-uploader-irys"
 import { readFile } from "fs/promises"
 import { createNft, mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
 import base58 from "bs58";
+import { throws } from "assert";
+import { programSupportsExtensions } from "@solana/spl-token";
 
 // Create a devnet connection
 const RPC_URL = 'https://devnet.helius-rpc.com/?api-key=71d05d9f-5d94-4548-9137-c6c3d9f69b3e';
@@ -17,6 +19,7 @@ const signer = createSignerFromKeypair(umi, keypair);
 // umi.use(irysUploader({ address: "https://devnet.irys.xyz/" }));
 umi.use(irysUploader());
 umi.use(signerIdentity(signer));
+umi.use(mplTokenMetadata());
 const mint = generateSigner(umi);
 
 interface IUploadImage {
@@ -25,7 +28,7 @@ interface IUploadImage {
     contentType: string
 }
 
-const uploadImage = async ({ path, fileName, contentType }: IUploadImage): string => {
+const uploadImage = async ({ path, fileName, contentType }: IUploadImage): Promise<string> => {
     try {
         //1. Load image
         // const img = await readFile("/home/hnariman/Downloads/1.png");
@@ -43,6 +46,7 @@ const uploadImage = async ({ path, fileName, contentType }: IUploadImage): strin
     }
     catch (error) {
         console.log("Oops.. Something went wrong", error);
+        throw Error("Oops.. Something went wrong");
     }
 };
 
@@ -53,7 +57,7 @@ interface IMetadata {
     description: string,
 };
 
-const createMetadata = async ({ imageURI, name, symbol, description }: IMetadata): string => {
+const createMetadata = async ({ imageURI, name, symbol, description }: IMetadata): Promise<string> => {
     try {
         // Follow this JSON structure
         // https://docs.metaplex.com/programs/token-metadata/changelog/v1.0#json-structure
@@ -86,12 +90,13 @@ const createMetadata = async ({ imageURI, name, symbol, description }: IMetadata
                 share: 100
             }]
         };
-        const myUri = await umi.uploader.uploadJson(metadata);
-        console.log("Your metadata URI: ", myUri);
-        return myUri;
+        const uri = await umi.uploader.uploadJson(metadata);
+        console.log("Your metadata URI: ", uri);
+        return uri
     }
     catch (error) {
         console.log("Oops.. Something went wrong", error);
+        throw Error("Oops.. Something went wrong");
     }
 };
 
@@ -101,41 +106,64 @@ interface IMintNFT {
     metadataURI: string,
 }
 
-const mintNFT = async ({ name, symbol, metadataURI }: IMintNFT) => {
-    let tx = createNft(umi, {
-        mint,
-        name,
-        symbol,
-        uri: metadataURI,
-        sellerFeeBasisPoints: percentAmount(1),
-        isMutable: true,
-        collectionDetails: null
-    });
-    let result = await tx.sendAndConfirm(umi);
-    const signature = base58.encode(result.signature);
+const mintNFT = async ({ name, symbol, metadataURI }: IMintNFT): Promise<unknown> => {
+    try {
+        console.log('MINTINnnnnnNOW!');
+        let tx = createNft(umi, {
+            mint,
+            name,
+            symbol,
+            uri: metadataURI,
+            sellerFeeBasisPoints: percentAmount(1),
+            isMutable: true,
+            collectionDetails: null
+        });
+        console.log('TX_________', { tx });
+        console.log(`tx ready, uri:${metadataURI}`);
+        let result = await tx.sendAndConfirm(umi);
+        console.log({ result });
+        const signature = base58.encode(result.signature);
 
-    console.log(`Succesfully Minted! Check out your TX here:\nhttps://explorer.solana.com/tx/${signature}?cluster=devnet`)
+        console.log(`Succesfully Minted! Check out your TX here:\nhttps://explorer.solana.com/tx/${signature}?cluster=devnet`)
 
-    console.log("Mint Address: ", mint.publicKey);
+        return console.log("Mint Address: ", mint.publicKey);
+    } catch (e) {
+        console.error(e);
+        throw Error("Oops.. Something went wrong");
+    }
 };
 
 (async () => {
     try {
+        const data = {
+            path: "/home/hnariman/Pictures/rug/astro/3.png",
+            fileName: "punk3.png",
+            contentType: "image/png",
+            name: "Turbin3 Astro 3",
+            symbol: "TRBNA3",
+            description: "Astro series continues!"
+        }
+
         const imageURI = await uploadImage({
-            path: "/home/hnariman/Pictures/turbin3-rug-day/duck/2.png",
-            fileName: "duck2.png",
-            contentType: "image/png"
+            path: data.path,
+            fileName: data.fileName,
+            contentType: data.contentType
         });
 
         const metadataURI = await createMetadata({
             imageURI,
-            name: "Turbin3 Duck Two",
-            symbol: "TRBND2",
-            description: "Duck series continues!"
+            name: data.name,
+            symbol: data.symbol,
+            description: data.description
         });
 
-        await mintNFT({ name: "Turbin3 Duck Two", symbol: "TRBND2", metadataURI });
+        await mintNFT({ name: data.name, symbol: data.symbol, metadataURI });
         return null
-    } catch (e) { console.error(e) }
+    } catch (e) {
+        console.error(e);
+        throw Error("Houston we have a problem!");
+    } finally {
+        console.log(process.getActiveResourcesInfo());
+    }
 })()
 
