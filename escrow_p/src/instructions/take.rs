@@ -34,7 +34,9 @@ impl<'a> TakeContext<'a> for &[AccountInfo] {
         assert!(escrow_derived == escrow.key().as_ref());
 
         let bump_ref = &[escrow_data];
+
         let signer_seeds = seeds!(b"escrow", maker.key().as_ref(), &escrow_data.seed, bump_ref);
+
         let signer = Signer::from(&signer_seeds);
         let signer1 = Signer::from(&signer_seeds);
 

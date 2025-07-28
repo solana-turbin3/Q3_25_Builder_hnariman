@@ -29,7 +29,8 @@ impl<'a> RefundContext<'a> for &[AccountInfo] {
         let escrow_seeds = &[b"escrow", maker.key().as_ref(), &escrow_data.seed];
         let (esrow_derived, escrow_bump) =
             pubkey::try_find_program_address(escrow_seeds, &crate::ID)
-                .ok_or(ProgramError::InvalidSeeds);
+            .ok_or(ProgramError::InvalidSeeds)?;
+
 
         assert!(esrow_derived == escrow.key().as_ref());
 

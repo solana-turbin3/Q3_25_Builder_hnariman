@@ -4,6 +4,7 @@ use core::f64::consts::E;
 use crate::state::Escrow;
 use pinocchio::{
     account_info::AccountInfo,
+    instruction::Seed,
     instruction::Signer,
     program_error::ProgramError,
     pubkey, seeds,
@@ -66,6 +67,7 @@ impl<'a> MakeContext<'a> for &[AccountInfo] {
         let bump_ref = &[args.bump];
 
         let signer_seeds = seeds!(b"escrow", maker.key().as_ref(), &args.seed, bump_ref);
+
         let signer = Signer::from(&signer_seeds);
 
         pinocchio_system::instructions::CreateAccount {
