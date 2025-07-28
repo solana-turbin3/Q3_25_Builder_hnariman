@@ -18,5 +18,5 @@ node_modules
 wallet.json
 *wallet.json
 */target*
-blockbuster
+blockbuster/docs
 escrow_p/target/debug
