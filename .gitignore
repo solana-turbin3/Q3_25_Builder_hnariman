@@ -17,5 +17,6 @@ node_modules
 .pnp.*
 wallet.json
 *wallet.json
-/target
+*/target*
 blockbuster
+escrow_p/target/debug
