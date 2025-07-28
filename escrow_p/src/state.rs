@@ -23,7 +23,6 @@ impl Escrow {
     pub const LEN: usize = core::mem::size_of::<Escrow>();
 
     pub fn set_inner(&mut self, new_self: Self) {
-        //TODO: berg has duplicate amount fields here, suggest fix
         self.maker = new_self.maker;
         self.mint_a = new_self.mint_a;
         self.mint_b = new_self.mint_b;

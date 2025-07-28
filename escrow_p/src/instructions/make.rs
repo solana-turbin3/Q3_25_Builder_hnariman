@@ -66,7 +66,8 @@ impl<'a> MakeContext<'a> for &[AccountInfo] {
 
         let bump_ref = &[args.bump];
 
-        let signer_seeds = seeds!(b"escrow", maker.key().as_ref(), &args.seed);
+        let signer_seeds = seeds!(b"escrow", maker.key().as_ref(), &args.seed, bump_ref);
+
         let signer = Signer::from(&signer_seeds);
 
         pinocchio_system::instructions::CreateAccount {
