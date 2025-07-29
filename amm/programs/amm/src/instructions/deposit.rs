@@ -5,7 +5,10 @@ use anchor_spl::{
         self, mint_to, spl_token::error::TokenError, transfer, Mint, MintTo, Token, TokenAccount,
         Transfer,
     },
-    token_2022::spl_token_2022::extension::{memo_transfer::instruction::RequiredMemoTransfersInstruction, transfer_fee::instruction::TransferFeeInstruction},
+    token_2022::spl_token_2022::extension::{
+        memo_transfer::instruction::RequiredMemoTransfersInstruction,
+        transfer_fee::instruction::TransferFeeInstruction,
+    },
 };
 use constant_product_curve::ConstantProduct;
 
@@ -19,7 +22,7 @@ use crate::{
 pub struct Deposit<'a> {
     // collect pubkeys to identify what we have to work with
     #[account(mut)]
-    pub user: Signer<'a>, // user 
+    pub user: Signer<'a>, // user
     pub mint_x: Account<'a, Mint>, // token x
     pub mint_y: Account<'a, Mint>, // token y
 
@@ -81,7 +84,7 @@ impl<'a> Deposit<'a> {
                     amount,
                     6,
                 )
-                    .unwrap();
+                .unwrap();
                 (amount.x, amount.y)
             }
         };
@@ -96,43 +99,51 @@ impl<'a> Deposit<'a> {
         Ok(())
     }
 
-    pub fn deposit_tokens(&self, is_x: bool, amount: u64) -> Result<()>{
+    pub fn deposit_tokens(&self, is_x: bool, amount: u64) -> Result<()> {
         // TODO: maybe can make something like:
         // deposit(token,vault,amount)?;
         // so no need to check for x - les CU?
         // -- also can use some builder pattern here, maybe?
 
         // define the token we deposit to vault (as we can't store X token in Y vault)
-        let (from,to)= match is_x {
-            true => (self.user_x.to_account_info(), self.vault_x.to_account_info())
-            false => (self.user_y.to_account_info(), self.vault_y.to_account_info())
+        let (from, to) = match is_x {
+            true => (
+                self.user_x.to_account_info(),
+                self.vault_x.to_account_info(),
+            ),
+            false => (
+                self.user_y.to_account_info(),
+                self.vault_y.to_account_info(),
+            ),
         };
 
-        // setup context, program address & accounts 
+        // setup context, program address & accounts
         let cpi_program = self.token_program.to_account_info();
-        let cpi_accounts = Transfer{ from, to, authority: self.user.to_account_info() };
+        let cpi_accounts = Transfer {
+            from,
+            to,
+            authority: self.user.to_account_info(),
+        };
         let ctx = CpiContext::new(cpi_program, cpi_accounts);
 
         // transfer tokens to account
         transfer(ctx, amount)?;
         Ok(())
-
-
     }
 
-    pub fn mint_lp_tokens(&self, amount:u64) -> Result<()>{
+    pub fn mint_lp_tokens(&self, amount: u64) -> Result<()> {
         // setup context, accounts & seeds
         let program = self.token_program.to_account_info();
-        let accounts = MintTo{
+        let accounts = MintTo {
             mint: self.mint_lp.to_account_info(),
-            to:self.user_lp.to_account_info(),
-            authority: self.config.to_account_info()
+            to: self.user_lp.to_account_info(),
+            authority: self.config.to_account_info(),
         };
 
         let seeds = &[
             CONFIG_SEED,
             &self.config.seed.to_le_bytes(),
-            &[self.config.config_bump]
+            &[self.config.config_bump],
         ];
 
         let signer_seeds = &[&seeds[..]];

@@ -1,4 +1,4 @@
-use anchor_lang::{prelude::* };
+use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{transfer, Mint, Token, TokenAccount, Transfer},
@@ -36,9 +36,9 @@ pub struct Swap<'a> {
 
     #[account(
         init_if_needed,
-        payer=user,
+        payer=taker,
         associated_token::mint=mint_lp,
-        associated_token::authority=user,
+        associated_token::authority=taker,
     )]
     pub user_lp: Account<'a, TokenAccount>, // LP for user ?
 
@@ -78,16 +78,26 @@ impl<'a> Swap<'a> {
         Ok(())
     }
 
-    pub fn deposit_tokens(&self, is_x: bool, amount: u64) -> Result<()>{
+    pub fn deposit_tokens(&self, is_x: bool, amount: u64) -> Result<()> {
         // define the token we deposit to vault (as we can't store X token in Y vault)
-        let (from,to)= match is_x {
-            true => (self.taker_x.to_account_info(), self.vault_x.to_account_info())
-            false => (self.taker_y.to_account_info(), self.vault_y.to_account_info())
+        let (from, to) = match is_x {
+            true => (
+                self.taker_x.to_account_info(),
+                self.vault_x.to_account_info(),
+            ),
+            false => (
+                self.taker_y.to_account_info(),
+                self.vault_y.to_account_info(),
+            ),
         };
 
-        // setup context, program address & accounts 
+        // setup context, program address & accounts
         let cpi_program = self.token_program.to_account_info();
-        let cpi_accounts = Transfer{ from, to, authority: self.taker.to_account_info() };
+        let cpi_accounts = Transfer {
+            from,
+            to,
+            authority: self.taker.to_account_info(),
+        };
         let ctx = CpiContext::new(cpi_program, cpi_accounts);
 
         // transfer tokens to account
@@ -95,21 +105,31 @@ impl<'a> Swap<'a> {
         Ok(())
     }
 
-    pub fn withdraw_tokens(&self, is_x: bool, amount: u64) -> Result<()>{
+    pub fn withdraw_tokens(&self, is_x: bool, amount: u64) -> Result<()> {
         // define the token we deposit to vault (as we can't store X token in Y vault)
-        let (from,to)= match is_x {
-            true => (self.vault_x.to_account_info(), self.taker_x.to_account_info())
-            false => (self.vault_y.to_account_info(), self.taker_y.to_account_info())
+        let (from, to) = match is_x {
+            true => (
+                self.vault_x.to_account_info(),
+                self.taker_x.to_account_info(),
+            ),
+            false => (
+                self.vault_y.to_account_info(),
+                self.taker_y.to_account_info(),
+            ),
         };
 
-        // setup context, program address & accounts 
+        // setup context, program address & accounts
         let program = self.token_program.to_account_info();
-        let accounts = Transfer{ from, to, authority: self.taker.to_account_info() };
+        let accounts = Transfer {
+            from,
+            to,
+            authority: self.taker.to_account_info(),
+        };
 
         let seeds = &[
             CONFIG_SEED,
             &self.config.seed.to_le_bytes(),
-            &[self.config.config_bump]
+            &[self.config.config_bump],
         ];
 
         let signer_seeds = &[&seeds[..]];
@@ -121,5 +141,4 @@ impl<'a> Swap<'a> {
         transfer(ctx, amount)?;
         Ok(())
     }
-
 }

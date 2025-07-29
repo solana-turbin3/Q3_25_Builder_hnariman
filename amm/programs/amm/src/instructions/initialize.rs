@@ -19,7 +19,7 @@ pub struct Initialize<'a> {
     pub mint_y: Account<'a, Mint>, // so we get access to token specific features
 
     #[account(
-        init,
+        init_if_needed,
         payer = initializer,
         seeds = [LP_SEED, config.key().as_ref()],
         bump,
@@ -52,6 +52,11 @@ pub struct Initialize<'a> {
         associated_token::authority = config,
     )]
     pub vault_y: Account<'a, TokenAccount>,
+
+    // programs:
+    pub token_program: Program<'a, Token>,
+    pub associated_token_program: Program<'a, AssociatedToken>,
+    pub system_program: Program<'a, System>,
 }
 
 impl<'a> Initialize<'a> {
