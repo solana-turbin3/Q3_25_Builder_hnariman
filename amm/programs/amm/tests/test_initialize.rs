@@ -1,21 +1,11 @@
-#![cfg(feature = "test-sbf")]
-
-use {
-    anchor_lang::{solana_program::instruction::Instruction, InstructionData, ToAccountMetas},
-    mollusk_svm::{result::Check, Mollusk},
-};
+#[allow(unused)]
+use litesvm;
+use litesvm_testing;
 
 #[test]
-fn test_initialize() {
-    let program_id = amm::id();
-
-    let mollusk = Mollusk::new(&program_id, "amm");
-
-    let instruction = Instruction::new_with_bytes(
-        program_id,
-        &amm::instruction::Initialize {}.data(),
-        amm::accounts::Initialize {}.to_account_metas(None),
-    );
-
-    mollusk.process_and_validate_instruction(&instruction, &[], &[Check::success()]);
+pub fn test_init() {
+    let (mut svm, payer) = litesvm_testing::setup_svm_and_fee_payer();
+    // let ID: Pubkey = Pubkey::new_unique();
+    // svm.add_program(&amm::ID, include_bytes!("../../../target/build/amm.so"));
+    dbg!(amm::ID);
 }

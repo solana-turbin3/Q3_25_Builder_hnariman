@@ -21,7 +21,9 @@ test-sbf = []
 anchor-spl = { version = "0.31.1", features = ["token"] }
 constant-product-curve = { git = "https://github.com/deanmlittle/constant-product-curve.git" }
 anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
+solana-sdk = "2.2"
+litesvm-testing = { version = "0.2.0", features = ["anchor"] }
 
 [dev-dependencies]
-mollusk-svm = "=0.0.15"
-solana-program = "~2.1"
+solana-program = "~2.2"
+litesvm = "0.6.1"
